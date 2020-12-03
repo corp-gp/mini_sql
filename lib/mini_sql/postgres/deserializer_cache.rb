@@ -18,7 +18,7 @@ module MiniSql
         if materializer
           @cache[key] = materializer
         else
-          materializer = @cache[key] = new_row_matrializer(result)
+          materializer = @cache[key] = self.class.new_row_matrializer(result)
           @cache.shift if @cache.length > @max_size
         end
 
@@ -35,14 +35,14 @@ module MiniSql
         if materializer
           @cache[key] = materializer
         else
-          materializer = @cache[key] = new_row_matrializer(result)
+          materializer = @cache[key] = self.class.new_row_matrializer(result)
           @cache.shift if @cache.length > @max_size
         end
 
         materializer.include(decorator_module) if decorator_module
 
         i = 0
-        r = []
+        r = MiniSql::ResultRow.new(decorator_module: decorator_module)
         # quicker loop
         while i < result.ntuples
           r << materializer.materialize(result, i)
@@ -51,9 +51,7 @@ module MiniSql
         r
       end
 
-      private
-
-      def new_row_matrializer(result)
+      def self.new_row_matrializer(result)
         fields = result.fields
 
         i = 0
